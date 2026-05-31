@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanskrit Study Guide Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Sanskrit:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F4EE;--sur:#FFF;--sur2:#F0EDE6;--bor:#E2DDD4;
+  --tx:#1A1714;--tx2:#6B6560;--tx3:#9E9890;
+  --acc:#C4531A;--acc-bg:#FDF0EA;--acc-bor:#EEC5AD;
+  --grn:#2A7A4B;--grn-bg:#EAF5EE;
+  --blu:#1B5FA8;--blu-bg:#EAF1FB;
+  --amb:#8B5E00;--amb-bg:#FEF4DC;
+  --red-bg:#FCEAEA;--red:#A02020;
+}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-height:100vh}
+.screen{display:none}.screen.on{display:flex;flex-direction:column}
+
+/* Upload */
+#su{min-height:100vh;align-items:center;justify-content:center;padding:2rem;gap:1rem}
+.title{font-family:'Tiro Devanagari Sanskrit',serif;font-size:2rem;font-weight:400;text-align:center}
+.sub{font-size:14px;color:var(--tx2);text-align:center;margin-top:-0.5rem}
+.dzone{width:100%;max-width:460px;border:1.5px dashed var(--bor);border-radius:16px;background:var(--sur);padding:2.5rem 2rem;text-align:center;cursor:pointer;position:relative;transition:.2s}
+.dzone:hover,.dzone.drag{border-color:var(--acc);background:var(--acc-bg)}
+.dzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dzi{font-size:2.5rem;color:var(--tx3);margin-bottom:.5rem}
+.dzm{font-size:15px;font-weight:500}
+.dzh{font-size:13px;color:var(--tx3);margin-top:4px}
+.fbadge{display:none;width:100%;max-width:460px;padding:9px 16px;border-radius:10px;background:var(--grn-bg);color:var(--grn);font-size:13px;font-weight:500;text-align:center}
+.gbtn{display:none;width:100%;max-width:460px;padding:13px;border-radius:12px;background:var(--tx);color:#fff;font-size:15px;font-weight:500;border:none;cursor:pointer;transition:.15s}
+.gbtn:hover{opacity:.88}.gbtn:active{transform:scale(.98)}.gbtn:disabled{opacity:.45;cursor:not-allowed}
+.err{display:none;width:100%;max-width:460px;padding:10px 14px;border-radius:10px;background:var(--red-bg);color:var(--red);font-size:13px}
+
+/* Progress */
+#sp{min-height:100vh;align-items:center;justify-content:center;padding:2rem;gap:1.5rem}
+.ptitle{font-family:'Tiro Devanagari Sanskrit',serif;font-size:1.4rem;font-weight:400}
+.psteps{width:100%;max-width:380px}
+.step{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bor);font-size:14px;color:var(--tx2)}
+.step:last-child{border-bottom:none}
+.step.done,.step.act{color:var(--tx)}
+.sdot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--bor);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--tx3);transition:.3s}
+.step.done .sdot{background:var(--grn);border-color:var(--grn);color:#fff}
+.step.act .sdot{background:var(--acc);border-color:var(--acc);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Guide */
+#sg{padding:1.5rem;max-width:900px;margin:0 auto;width:100%}
+.ghead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem}
+.gtitle{font-family:'Tiro Devanagari Sanskrit',serif;font-size:1.6rem;font-weight:400}
+.backbtn{font-size:13px;color:var(--tx2);cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--bor);background:var(--sur)}
+.backbtn:hover{background:var(--sur2)}
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--bor)}
+.tab{padding:7px 13px;border-radius:8px;border:1px solid var(--bor);font-size:13px;cursor:pointer;background:var(--sur);color:var(--tx2);white-space:nowrap}
+.tab:hover{background:var(--sur2)}.tab.on{background:var(--tx);color:#fff;border-color:var(--tx)}
+.tsec{display:none}.tsec.on{display:block}
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:1.25rem;margin-bottom:10px;overflow-x:auto}
+.slbl{font-size:11px;font-weight:500;letter-spacing:.07em;color:var(--tx3);text-transform:uppercase;margin:1.25rem 0 .6rem}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11px;color:var(--tx3);font-weight:500;padding:5px 8px;border-bottom:1px solid var(--bor)}
+td{padding:8px;border-bottom:1px solid var(--bor);color:var(--tx);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--sur2)}
+.skt{font-family:'Tiro Devanagari Sanskrit',serif;font-size:15px}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+.tb{background:var(--blu-bg);color:var(--blu)}.tg{background:var(--grn-bg);color:var(--grn)}.ta{background:var(--amb-bg);color:var(--amb)}
+.qbox{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:1.25rem;margin-bottom:10px}
+.qtxt{font-family:'Tiro Devanagari Sanskrit',serif;font-size:15px;line-height:1.6;margin-bottom:4px}
+.qhint{font-size:11.5px;color:var(--tx3);font-family:'DM Sans',sans-serif;margin-bottom:10px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.obtn{padding:7px 13px;border-radius:8px;border:1px solid var(--bor);background:var(--sur2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.obtn:hover:not(:disabled){background:var(--acc-bg);border-color:var(--acc-bor)}
+.obtn.ok{background:var(--grn-bg);border-color:var(--grn);color:var(--grn)}
+.obtn.no{background:var(--red-bg);border-color:#E5AAAA;color:var(--red)}
+.rev{display:none;margin-top:10px;padding:9px 12px;border-radius:0;border-left:3px solid var(--acc);background:var(--sur2);font-size:13px;color:var(--tx2);line-height:1.5;font-family:'DM Sans',sans-serif}
+textarea.ta{width:100%;padding:9px;border:1px solid var(--bor);border-radius:8px;font-size:13px;resize:vertical;min-height:60px;background:var(--sur2);color:var(--tx);font-family:'DM Sans',sans-serif;margin-bottom:6px}
+textarea.ta:focus{outline:none;border-color:var(--acc)}
+.cbtn{padding:7px 15px;border-radius:8px;border:1px solid var(--acc-bor);background:var(--acc-bg);color:var(--acc);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.srow{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin-bottom:1rem;font-size:14px;color:var(--tx2)}
+.sv{font-size:17px;font-weight:500;color:var(--tx)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:.75rem 0}
+.tcard{background:var(--sur2);border-radius:10px;padding:.9rem;text-align:center}
+.tnum{font-size:22px;font-weight:500}.tlbl{font-size:11.5px;color:var(--tx2);margin-top:3px;line-height:1.4}
+.totrow{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--sur);border:1px solid var(--bor);border-radius:12px;margin:.75rem 0}
+.plist{display:flex;flex-direction:column;gap:6px;margin-top:.75rem}
+.pitem{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--sur);border:1px solid var(--bor);border-radius:8px;font-size:13px}
+.pnum{width:20px;height:20px;border-radius:50%;background:var(--sur2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;color:var(--tx2)}
+</style>
+</head>
+<body>
+
+<!-- UPLOAD -->
+<div id="su" class="screen on">
+  <div class="title">संस्कृत अध्ययन सहायक</div>
+  <div class="sub">Sanskrit Chapter Study Guide Generator · Class 9</div>
+  <div class="dzone" id="dz">
+    <input type="file" id="fi" accept=".pdf,.zip">
+    <div class="dzi">📄</div>
+    <div class="dzm">Drop your chapter PDF here</div>
+    <div class="dzh">or click to browse — PDF or ZIP</div>
+  </div>
+  <div class="fbadge" id="fb"></div>
+  <button class="gbtn" id="gb" onclick="generate()">Generate Study Guide →</button>
+  <div class="err" id="er"></div>
+</div>
+
+<!-- PROGRESS -->
+<div id="sp" class="screen">
+  <div class="ptitle">Generating your study guide…</div>
+  <div class="psteps">
+    <div class="step" id="p1"><div class="sdot" id="d1">1</div>Reading chapter content</div>
+    <div class="step" id="p2"><div class="sdot" id="d2">2</div>Extracting shabdaarth &amp; vocab</div>
+    <div class="step" id="p3"><div class="sdot" id="d3">3</div>Identifying dhatu &amp; pratyay</div>
+    <div class="step" id="p4"><div class="sdot" id="d4">4</div>Analysing samas &amp; shabdroop</div>
+    <div class="step" id="p5"><div class="sdot" id="d5">5</div>Building anuwad practice</div>
+    <div class="step" id="p6"><div class="sdot" id="d6">6</div>Finalising study plan</div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div id="sg" class="screen">
+  <div class="ghead">
+    <div class="gtitle" id="gttl">Study Guide</div>
+    <button class="backbtn" onclick="goBack()">← New chapter</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="st('tw')">📚 Shabdaarth</button>
+    <button class="tab" onclick="st('td')">🔧 Dhatu</button>
+    <button class="tab" onclick="st('ts')">📝 Shabdroop</button>
+    <button class="tab" onclick="st('tp')">🔗 Pratyay &amp; Upsarg</button>
+    <button class="tab" onclick="st('tm')">🧩 Samas</button>
+    <button class="tab" onclick="st('ta')">✍️ Anuwad</button>
+    <button class="tab" onclick="st('tt')">⏱ Study Plan</button>
+  </div>
+  <div id="tw" class="tsec on"></div>
+  <div id="td" class="tsec"></div>
+  <div id="ts" class="tsec"></div>
+  <div id="tp" class="tsec"></div>
+  <div id="tm" class="tsec"></div>
+  <div id="ta" class="tsec"></div>
+  <div id="tt" class="tsec"></div>
+</div>
+
+<script>
+let fileData=null,scores={c:0,t:0};
+const fi=document.getElementById('fi'),dz=document.getElementById('dz');
+const fb=document.getElementById('fb'),gb=document.getElementById('gb'),er=document.getElementById('er');
+
+fi.addEventListener('change',e=>pick(e.target.files[0]));
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');pick(e.dataTransfer.files[0])});
+
+function pick(f){if(!f)return;fileData=f;fb.textContent='✓ '+f.name;fb.style.display='block';gb.style.display='block';er.style.display='none';}
+
+function sw(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+function setStep(n,state){
+  const p=document.getElementById('p'+n),d=document.getElementById('d'+n);
+  p.className='step '+(state||'');
+  d.textContent=state==='done'?'✓':n;
+}
+
+async function toB64(blob){
+  return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(blob);});
+}
+
+async function generate(){
+  er.style.display='none';gb.disabled=true;sw('sp');setStep(1,'act');
+  let parts=[];
+  try{
+    const isZip=fileData.name.toLowerCase().endsWith('.zip')||fileData.type.includes('zip');
+    if(isZip){
+      const {default:JSZip}=await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+      const zip=await JSZip.loadAsync(fileData);
+      const txts=Object.keys(zip.files).filter(n=>n.endsWith('.txt')&&!n.includes('manifest')).sort();
+      const imgs=Object.keys(zip.files).filter(n=>/\.(jpe?g|png)$/i.test(n)).sort().slice(0,4);
+      let txt='';
+      for(const n of txts)txt+=await zip.files[n].async('string')+'\n';
+      if(txt.trim())parts.push({type:'text',text:'Chapter text:\n\n'+txt});
+      for(const n of imgs){const blob=await zip.files[n].async('blob');const b64=await toB64(blob);parts.push({type:'image',source:{type:'base64',media_type:blob.type||'image/jpeg',data:b64}});}
+    } else {
+      const b64=await toB64(fileData);
+      parts.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}});
+    }
+
+    setStep(1,'done');setStep(2,'act');
+    await delay(500);setStep(2,'done');setStep(3,'act');
+
+    parts.push({type:'text',text:`Analyse this Sanskrit chapter (Class 9) and return ONLY a valid JSON object — no markdown, no backticks, no preamble.
+
+{
+  "chapterName": "title",
+  "words": [{"skt":"","hindi":"","english":"","type":"","note":""}],
+  "dhatu": [{"dhatu":"√","arth":"","example":"","conjugation":"ek / dwi / bahu"}],
+  "shabdroop": [{"word":"","gender":"","ending":"","table":{"prathamaa":["","",""],"dviteeyaa":["","",""],"triteeyaa":["","",""],"chaturthi":["","",""],"panchamee":["","",""],"shashthee":["","",""],"saptamee":["","",""],"sambodhan":["","",""]}}],
+  "upsarg": [{"upsarg":"","arth":"","example":"","change":""}],
+  "pratyay": [{"pratyay":"","type":"","arth":"","example":""}],
+  "samas": [{"samastpad":"","vigrah":"","type":""}],
+  "anuwad": [{"type":"mcq","q":"","hint":"","options":["","","",""],"ans":0,"explain":""},{"type":"translate","q":"","hint":"","ans":"","explain":""}],
+  "timeplan": [{"task":"","minutes":0}],
+  "priority": ["","","","","",""]
+}
+
+Rules:
+- words: ALL important vocab — frequent, contextually/grammatically significant, AND exam-relevant rare words. Min 30 words.
+- shabdroop: 3 words, different genders and ending types.
+- anuwad: exactly 8 questions, alternating mcq/translate.
+- All Sanskrit in Devanagari script.
+- Return ONLY the JSON.`});
+
+    await delay(400);setStep(3,'done');setStep(4,'act');
+
+    const res=await fetch('/api/proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,messages:[{role:'user',content:parts}]})
+    });
+
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API error '+res.status);}
+    const data=await res.json();
+    const raw=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+
+    setStep(4,'done');setStep(5,'act');await delay(300);
+    setStep(5,'done');setStep(6,'act');await delay(300);setStep(6,'done');await delay(400);
+
+    const g=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    render(g);sw('sg');
+
+  }catch(e){
+    sw('su');er.textContent='Error: '+e.message;er.style.display='block';gb.disabled=false;
+  }
+}
+
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>s.replace(/'/g,"\\'").replace(/\n/g,' ');
+
+function render(g){
+  scores={c:0,t:0};
+  document.getElementById('gttl').textContent=g.chapterName||'Study Guide';
+
+  document.getElementById('tw').innerHTML=`<div class="card"><p style="font-size:12.5px;color:var(--tx2);margin-bottom:12px">All important vocab — frequent, exam-relevant, and grammatically notable words.</p><table><thead><tr><th>Sanskrit</th><th>Hindi</th><th>English</th><th>Type</th><th>Note</th></tr></thead><tbody>${(g.words||[]).map(w=>`<tr><td class="skt">${w.skt}</td><td>${w.hindi}</td><td>${w.english}</td><td><span class="tag tb">${w.type}</span></td><td style="font-size:12px;color:var(--tx2)">${w.note||''}</td></tr>`).join('')}</tbody></table></div>`;
+
+  document.getElementById('td').innerHTML=`<div class="card"><table><thead><tr><th>धातु</th><th>अर्थ</th><th>Example</th><th>लट् (ए/द्वि/बहु)</th></tr></thead><tbody>${(g.dhatu||[]).map(d=>`<tr><td class="skt">${d.dhatu}</td><td>${d.arth}</td><td class="skt">${d.example}</td><td style="font-size:12px">${d.conjugation}</td></tr>`).join('')}</tbody></table></div>`;
+
+  const vk=['prathamaa','dviteeyaa','triteeyaa','chaturthi','panchamee','shashthee','saptamee','sambodhan'];
+  const vn=['प्रथमा','द्वितीया','तृतीया','चतुर्थी','पञ्चमी','षष्ठी','सप्तमी','सम्बोधन'];
+  document.getElementById('ts').innerHTML=(g.shabdroop||[]).map((sr,i)=>`<div class="slbl">${i+1}. ${sr.word} — ${sr.gender} (${sr.ending})</div><div class="card"><table><thead><tr><th>विभक्ति</th><th>एकवचन</th><th>द्विवचन</th><th>बहुवचन</th></tr></thead><tbody>${vn.map((n,j)=>{const r=(sr.table||{})[vk[j]]||['—','—','—'];return`<tr><td style="color:var(--tx2);font-size:12px">${n}</td><td class="skt">${r[0]||'—'}</td><td class="skt">${r[1]||'—'}</td><td class="skt">${r[2]||'—'}</td></tr>`;}).join('')}</tbody></table></div>`).join('');
+
+  document.getElementById('tp').innerHTML=`<div class="slbl">उपसर्ग</div><div class="card"><table><thead><tr><th>उपसर्ग</th><th>अर्थ</th><th>Example</th><th>Effect</th></tr></thead><tbody>${(g.upsarg||[]).map(u=>`<tr><td class="skt">${u.upsarg}</td><td>${u.arth}</td><td class="skt">${u.example}</td><td style="font-size:12px;color:var(--tx2)">${u.change}</td></tr>`).join('')}</tbody></table></div><div class="slbl">प्रत्यय</div><div class="card"><table><thead><tr><th>प्रत्यय</th><th>प्रकार</th><th>Function</th><th>Example</th></tr></thead><tbody>${(g.pratyay||[]).map(p=>`<tr><td class="skt">${p.pratyay}</td><td><span class="tag ta">${p.type}</span></td><td>${p.arth}</td><td class="skt">${p.example}</td></tr>`).join('')}</tbody></table></div>`;
+
+  document.getElementById('tm').innerHTML=`<div class="card"><table><thead><tr><th>समस्त पद</th><th>विग्रह</th><th>समास</th></tr></thead><tbody>${(g.samas||[]).map(s=>`<tr><td class="skt">${s.samastpad}</td><td class="skt">${s.vigrah}</td><td><span class="tag tb">${s.type}</span></td></tr>`).join('')}</tbody></table></div>`;
+
+  let aH=`<div class="srow">🏆 Score: <span class="sv" id="sd">0 / 0</span></div>`;
+  (g.anuwad||[]).forEach((q,i)=>{
+    if(q.type==='mcq'){
+      aH+=`<div class="qbox"><div class="qtxt">${i+1}. ${q.q}</div><div class="qhint">${q.hint||''}</div><div class="opts" id="o${i}">${(q.options||[]).map((o,j)=>`<button class="obtn" onclick="cm(${i},${j},${q.ans},'${esc(q.explain||'')}')">${o}</button>`).join('')}</div><div class="rev" id="r${i}">${q.explain||''}</div></div>`;
+    } else {
+      aH+=`<div class="qbox"><div class="qtxt">${i+1}. ${q.q}</div><div class="qhint">${q.hint||''}</div><textarea class="ta" id="t${i}" placeholder="Type your answer…"></textarea><button class="cbtn" onclick="ct(${i})">Check →</button><div class="rev" id="r${i}"><strong>Model answer:</strong> ${q.ans||''}<br><br>${q.explain||''}</div></div>`;
+    }
+  });
+  document.getElementById('ta').innerHTML=aH;
+
+  const tot=(g.timeplan||[]).reduce((a,t)=>a+t.minutes,0);
+  const h=Math.floor(tot/60),m=tot%60;
+  document.getElementById('tt').innerHTML=`<div class="tgrid">${(g.timeplan||[]).map(t=>`<div class="tcard"><div class="tnum">${t.minutes}m</div><div class="tlbl">${t.task}</div></div>`).join('')}</div><div class="totrow"><span style="font-size:15px;font-weight:500">Total time</span><span style="font-size:22px;font-weight:500;color:var(--acc)">${h>0?h+'h ':''} ${m}min</span></div><div class="slbl">Exam priority order</div><div class="plist">${(g.priority||[]).map((p,i)=>`<div class="pitem"><span class="pnum">${i+1}</span>${p}</div>`).join('')}</div>`;
+}
+
+function cm(qi,chosen,correct,explain){
+  const bs=document.querySelectorAll('#o'+qi+' .obtn');
+  bs.forEach(b=>b.disabled=true);
+  bs[chosen].classList.add(chosen===correct?'ok':'no');
+  if(chosen!==correct)bs[correct].classList.add('ok');
+  scores.t++;if(chosen===correct)scores.c++;
+  document.getElementById('r'+qi).style.display='block';
+  document.getElementById('sd').textContent=scores.c+' / '+scores.t;
+}
+
+function ct(qi){
+  scores.t++;
+  document.getElementById('r'+qi).style.display='block';
+  document.getElementById('sd').textContent=scores.c+' / '+scores.t;
+}
+
+function st(id){
+  document.querySelectorAll('.tsec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  const map={tw:0,td:1,ts:2,tp:3,tm:4,ta:5,tt:6};
+  document.querySelectorAll('.tab')[map[id]].classList.add('on');
+}
+
+function goBack(){
+  fileData=null;fi.value='';fb.style.display='none';gb.style.display='none';gb.disabled=false;er.style.display='none';
+  sw('su');[1,2,3,4,5,6].forEach(n=>setStep(n,''));
+}
+</script>
+</body>
+</html>
